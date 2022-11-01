@@ -1,9 +1,9 @@
 use std::ops;
 
 
-fn quantize_fix(x: f64, signed: bool, w: u32, f: u32) -> f64 {
+fn quantize_fix(x: f64, s: bool, w: u32, f: u32) -> f64 {
     // This function quantizes a float number as a fixed point
-    // signed number with word length w and fraction length f.
+    // signed/unsigned number with word length w and fraction length f.
     // The rounding method is floor. 
     // quantize_fix() is used by the Ffix structure to implement
     // fixed point operators.
@@ -23,7 +23,7 @@ be strictly less than the word length. I'm not performing quantization.");
 
     let base: u32 = 2;
 
-    if signed {
+    if s {
         fs = base.pow(w-f-1) as f64;
         scaling_fact = f64::from(base.pow(w-1))/fs as f64;
     } else {
@@ -36,34 +36,33 @@ be strictly less than the word length. I'm not performing quantization.");
     let quantized = rounded.floor()/scaling_fact;
 
     // Check and handle overflows
+    // First, we compute upper and lower limits
     let upper_lim: f64 = fs - f64::from(base.pow(f)).powi(-1);
     let lower_lim: f64;
-    if signed {
+    if s {
         lower_lim = -fs;
     } else {
         lower_lim = 0.0;   
     }
-
+    // Then we check for overflow and saturate the output if overflow occurs
     if quantized > upper_lim {
-        return upper_lim
+        upper_lim
     } else if quantized < lower_lim{
-        return lower_lim
+        lower_lim
     } else {
-        return quantized;
+        quantized
     }
 }
 
 
 #[derive(Debug, Clone, Copy)]
 struct Ffix {
-    // This struct allows to represent signed fixed point
-    // numbers with floor rounding method. For the moment,
-    // the user can only choose the word length and the
-    // fraction length of the fixed point number. Other
+    // This struct allows to represent fixed point
+    // numbers with floor rounding method. Other
     // features will be implemented in the future, such
-    // as the possibility to represent unsigned numbers
-    // and a precise rule for operations between numbers
-    // with different word and fraction length.
+    // as a precise rule for operations between numbers
+    // with different word and fraction length and the
+    // possibility to choose other rounding methods.
     value: f64,
     signed: bool,
     word_bits: u32,
@@ -185,7 +184,21 @@ impl ops::Div for Ffix {
     }
 }
 
-// IMPLEMENT Neg OPERATOR FOR Ffix!
+impl ops::Neg for Ffix {
+    type Output = Self;
+
+    fn neg(self) -> Self {
+        Self {
+            value: quantize_fix(-self.value,
+                self.signed,
+                self.word_bits,
+                self.frac_bits),
+            signed: self.signed,
+            word_bits: self.word_bits,
+            frac_bits: self.frac_bits,
+        }
+    }
+}
 
 
 fn main() {
@@ -210,5 +223,6 @@ fn main() {
     println!("a/b: {}", (a/b).value);
     println!("a**2: {}", a.pow(2).value);
 
-    println!("Overflow test: b*c is {}", (b*c).value);
+    println!("\nOverflow test: b*c is {}", (b*c).value);
+    println!("Overflow test: -b*c is {}", (-b*c).value);
 }
