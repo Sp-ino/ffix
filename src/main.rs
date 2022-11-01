@@ -1,7 +1,7 @@
 use std::ops;
 
 
-fn quantize_fix(x: f64, w: u32, f: u32) -> f64 {
+fn quantize_fix(x: f64, signed: bool, w: u32, f: u32) -> f64 {
     // This function quantizes a float number as a fixed point
     // signed number with word length w and fraction length f.
     // The rounding method is floor. 
@@ -11,18 +11,46 @@ fn quantize_fix(x: f64, w: u32, f: u32) -> f64 {
     // as the possibility to set the signedness and the rounding
     // method.
 
+    // ADD SANITY CHECKS ON w AND f !
+
+    let fs: f64;
+    let scaling_fact: f64;
+
     if f >= w {
         println!("error:quantize_fix:the number of fractional bits should
 be strictly less than the word length. I'm not performing quantization.");
     }
 
-    let base: u32 = 2;    
-    let fs = base.pow(w-f-1) as f64;
-    let max_int = base.pow(w-1) as f64;
-    let normalizing_fact = max_int/fs as f64;
-    let rounded = x*normalizing_fact;
+    let base: u32 = 2;
+
+    if signed {
+        fs = base.pow(w-f-1) as f64;
+        scaling_fact = f64::from(base.pow(w-1))/fs as f64;
+    } else {
+        fs = base.pow(w-f) as f64;
+        scaling_fact = f64::from(base.pow(w))/fs as f64;
+    }
     
-    rounded.floor()/normalizing_fact
+    // Compute quantized number
+    let rounded = x*scaling_fact;
+    let quantized = rounded.floor()/scaling_fact;
+
+    // Check and handle overflows
+    let upper_lim: f64 = fs - f64::from(base.pow(f)).powi(-1);
+    let lower_lim: f64;
+    if signed {
+        lower_lim = -fs;
+    } else {
+        lower_lim = 0.0;   
+    }
+
+    if quantized > upper_lim {
+        return upper_lim
+    } else if quantized < lower_lim{
+        return lower_lim
+    } else {
+        return quantized;
+    }
 }
 
 
@@ -37,22 +65,24 @@ struct Ffix {
     // and a precise rule for operations between numbers
     // with different word and fraction length.
     value: f64,
+    signed: bool,
     word_bits: u32,
     frac_bits: u32,
 }
 
 impl Ffix  {
-    fn new(val: f64, word_bits: u32, frac_bits: u32) -> Self {
+    fn new(val: f64, signed: bool, word_bits: u32, frac_bits: u32) -> Self {
         // This associated function is a constructor for
         // creating new instances of Ffix.
          Ffix {
-            value: quantize_fix(val, word_bits, frac_bits),
+            value: quantize_fix(val, signed, word_bits, frac_bits),
+            signed,
             word_bits,
             frac_bits,
         }       
     }
 
-    fn from(other: Ffix, word_bits: u32, frac_bits: u32) -> Ffix {
+    fn from(other: Ffix, signed: bool, word_bits: u32, frac_bits: u32) -> Ffix {
         // This associated function converts an instance
         // to another instance with specified word lenght
         // and fraction length. Note that the instance that
@@ -60,7 +90,8 @@ impl Ffix  {
         // converted instance so it cannot be used anymore.
 
         Ffix {
-            value: quantize_fix(other.value, word_bits, frac_bits),
+            value: quantize_fix(other.value, signed, word_bits, frac_bits),
+            signed,
             word_bits,
             frac_bits,            
         }
@@ -74,12 +105,14 @@ impl Ffix  {
 
         for _i in 1..exponent {
             result = quantize_fix(result*val,
+                                self.signed,
                                 self.word_bits,
                                 self.frac_bits);
         }
 
         Ffix {
             value: result,
+            signed: self.signed,
             word_bits: self.word_bits,
             frac_bits: self.frac_bits,
         }
@@ -94,8 +127,10 @@ impl ops::Add for Ffix {
     fn add(self, other: Self) -> Self {
         Self {
             value: quantize_fix(self.value+other.value,
+                                self.signed,
                                 self.word_bits,
                                 self.frac_bits),
+            signed: self.signed,
             word_bits: self.word_bits,
             frac_bits: self.frac_bits,
         }
@@ -108,8 +143,10 @@ impl ops::Sub for Ffix {
     fn sub(self, other: Self) -> Self {
         Self {
             value: quantize_fix(self.value-other.value,
+                                self.signed,
                                 self.word_bits,
                                 self.frac_bits),
+            signed: self.signed,
             word_bits: self.word_bits,
             frac_bits: self.frac_bits,
         }
@@ -122,8 +159,10 @@ impl ops::Mul for Ffix {
     fn mul(self, other: Self) -> Self {
         Self {
             value: quantize_fix(self.value*other.value,
+                                self.signed,
                                 self.word_bits,
                                 self.frac_bits),
+            signed: self.signed,
             word_bits: self.word_bits,
             frac_bits: self.frac_bits,
         }
@@ -136,23 +175,28 @@ impl ops::Div for Ffix {
     fn div(self, other: Self) -> Self {
         Self {
             value: quantize_fix(self.value/other.value,
+                                self.signed,
                                 self.word_bits,
                                 self.frac_bits),
+            signed: self.signed,
             word_bits: self.word_bits,
             frac_bits: self.frac_bits,
         }
     }
 }
 
+// IMPLEMENT Neg OPERATOR FOR Ffix!
+
 
 fn main() {
-    let a = Ffix::new(2.12345678, 18, 12);
-    let b = Ffix::new(6.87654321, 18, 12);
+    let a = Ffix::new(2.12345678, true, 18, 12);
+    let b = Ffix::new(6.87654321, true, 18, 12);
+    let c = Ffix::new(32.0, true, 18, 12);
     
     let x: f64 = 2.12345678;
     let y: f64 = 6.87654321;
 
-    println!("Fixed point results:");
+    println!("Floating point results:");
     println!("x+y: {}", x+y);
     println!("x-y: {}", x-y);
     println!("x*y: {}", x*y);
@@ -165,4 +209,6 @@ fn main() {
     println!("a*b: {}", (a*b).value);
     println!("a/b: {}", (a/b).value);
     println!("a**2: {}", a.pow(2).value);
+
+    println!("Overflow test: b*c is {}", (b*c).value);
 }
