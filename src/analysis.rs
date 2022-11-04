@@ -8,3 +8,9 @@
 // 
 // Copyright (c) 2022 Valerio Spinogatti
 // Licensed under GNU license
+
+
+// This will be a struct which accepts a vector of immutable references to the
+// Ffix variables used in the algorithm. After each iteration of the
+// algorithm it will be possible to call an update() method that updates the
+// max and min values

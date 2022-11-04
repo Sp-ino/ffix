@@ -22,8 +22,13 @@ use crate::types::quantization::quantize_fix;
 
 // CONSIDER REMOVING Roundings
 
-// IMPLEMENT FixVector
-
+// ALTERNATIVE IMPLEMENTATIONS OF new() AND from() THAT ACCEPT A
+// VARIABLE OF CUSTOM TYPE (SOMETHING LIKE Settings) TO DEFINE
+// THE FIXED POINT SETTINGS.
+// Two alternatives: completely abandon interface based
+// on separated arguments for new() and from() or
+// use an enum to store a tuple with (s, w, f, rounding) in one variant
+// and 
 
 
 #[derive(Clone, Copy, Debug)]
