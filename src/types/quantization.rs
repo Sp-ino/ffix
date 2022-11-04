@@ -12,9 +12,10 @@
 
 
 use crate::types::Roundings;
+use crate::types::FfixSettings;
 use math::round;
 
-pub fn quantize_fix(x: f64, s: bool, w: u32, f: u32, rounding: Roundings) -> f64 {
+pub fn quantize_fix(x: f64, settings: FfixSettings) -> f64 {
     // This function quantizes a float number as a fixed point
     // signed/unsigned number with word length w and fraction length f.
     // The rounding method is floor. 
@@ -25,6 +26,11 @@ pub fn quantize_fix(x: f64, s: bool, w: u32, f: u32, rounding: Roundings) -> f64
     // method.
 
     // ADD SANITY CHECKS ON w AND f !
+
+    let s = settings.signed;
+    let w = settings.word_bits;
+    let f = settings.frac_bits;
+    let rounding = settings.rounding;
 
     let fs: f64;
     let scaling_fact: f64;

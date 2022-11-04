@@ -1,12 +1,15 @@
 use ffix::types::Ffix;
+use ffix::types::FfixSettings;
 use ffix::types::Roundings;
 
 
 fn main() {
     let r: Roundings = Roundings::Floor;
-    let a = Ffix::new(2.12345678, true, 18, 12, r);
-    let b = Ffix::new(6.87654321, true, 18, 12, r);
-    let c = Ffix::new(32.0, true, 18, 12, r);    
+    let settings = FfixSettings::new(true, 18, 12, r);
+
+    let a = Ffix::new(2.12345678, settings);
+    let b = Ffix::new(6.87654321, settings);
+    let c = Ffix::new(32.0, settings);    
     
     let x: f64 = 2.12345678;
     let y: f64 = 6.87654321;
