@@ -14,3 +14,17 @@
 // Ffix variables used in the algorithm. After each iteration of the
 // algorithm it will be possible to call an update() method that updates the
 // max and min values
+
+use crate::types::Ffix;
+
+
+struct RangeAnalyzer {
+    variables: Vec<Ffix>, //actually this should be a vector of &Ffix but I will need lifetimes for this
+}
+
+impl RangeAnalyzer {
+
+    fn update_ranges() {
+
+    }
+}
