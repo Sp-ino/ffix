@@ -1,4 +1,4 @@
-// Module name: quantization.rs
+// Module name: internal.rs
 // 
 // Author: Valerio Spinogatti
 // 
@@ -77,7 +77,7 @@ be strictly less than the word length. I'm not performing quantization.");
     // Then we check for overflow and saturate the output if overflow occurs
     if quantized > upper_lim {
         upper_lim
-    } else if quantized < lower_lim{
+    } else if quantized < lower_lim {
         lower_lim
     } else {
         quantized
