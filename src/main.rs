@@ -20,14 +20,14 @@ fn main() {
     println!("x**2: {}", x.powi(2));
     
     println!("\nFixed point results:");
-    println!("a+b: {}", (a+b).value);
-    println!("a-b: {}", (a-b).value);
-    println!("a*b: {}", (a*b).value);
-    println!("a/b: {}", (a/b).value);
-    println!("a**2: {}", a.pow(2).value);
+    println!("a+b: {}", (a+b).value());
+    println!("a-b: {}", (a-b).value());
+    println!("a*b: {}", (a*b).value());
+    println!("a/b: {}", (a/b).value());
+    println!("a**2: {}", a.pow(2).value());
     
-    println!("\nOverflow test: b*c is {}", (b*c).value);
-    println!("Overflow test: -b*c is {}\n", (-b*c).value);
+    println!("\nOverflow test: b*c is {}", (b*c).value());
+    println!("Overflow test: -b*c is {}\n", (-b*c).value());
 
     // I can also define vectors of Ffix
     let mut v: Vec<Ffix> = Vec::new();
@@ -36,12 +36,18 @@ fn main() {
     v.push(c);
 
     for item in &v {
-        println!("Value of item is {}", item.value);
+        println!("Value of item is {}", item.value());
     }
 
     for (idx, item) in v.iter().enumerate() {
-        println!("Value of item at index {} is {}", idx, item.value);
+        println!("Value of item at index {} is {}", idx, item.value());
     }
+
+    println!("value of v[0]: {}", v[0].value());
+
+    v[0] = v[1] - v[2];
+
+    println!("v[0] is {}", v[0].value());
 
     // for i in 1..100 {
     //     println!("Rounded to zero {}", round::half_towards_zero(-1.0-1.0/f64::from(i), 0));

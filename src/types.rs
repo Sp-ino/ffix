@@ -58,8 +58,8 @@ pub struct Ffix {
     // This struct allows to represent fixed point
     // numbers with arbitrary signedness, word length,
     // fraction length, and rounding method.
-    pub value: f64,
-    pub settings: FfixSettings,
+    value: f64,
+    settings: FfixSettings,
 }
 
 impl Ffix  {
@@ -79,16 +79,39 @@ impl Ffix  {
         // and fraction length. Note that the instance that
         // is passed to this method is moved into the
         // converted instance so it cannot be used anymore.
-        
         Ffix {
             value: internal::quantize_fix(other.value, settings),
             settings,
         }
     }
 
+    pub fn value(&self) -> f64 {
+        // Getter method for value
+        self.value
+    }
+
+    pub fn signed(&self) -> bool {
+        // Getter method for settings.signed
+        self.settings.signed
+    }
+
+    pub fn word_bits(&self) -> u32 {
+        // Getter method for settings.word_bits
+        self.settings.word_bits
+    }
+
+    pub fn frac_bits(&self) -> u32 {
+        // Getter method for settings.frac_bits
+        self.settings.frac_bits
+    }
+
+    pub fn rounding(&self) -> Roundings {
+        // Getter method for settings.rounding
+        self.settings.rounding
+    }
+
     pub fn pow(&self, exponent: i32) -> Ffix {
-        // This method implements fixed point exponentiation.
-        
+        // This method implements fixed point exponentiation.        
         let val = self.value;
         let mut result = self.value;
 
