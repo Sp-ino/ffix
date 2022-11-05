@@ -18,13 +18,13 @@
 use crate::types::Ffix;
 
 
-struct RangeAnalyzer {
-    variables: Vec<Ffix>, //actually this should be a vector of &Ffix but I will need lifetimes for this
+pub struct RangeAnalyzer<'a> {
+    pub variables: Vec<&'a Ffix>, //actually this should be a vector of &Ffix but I will need lifetimes for this
 }
 
-impl RangeAnalyzer {
+impl<'a> RangeAnalyzer<'a> {
 
-    fn update_ranges() {
+    fn update_ranges(&self) {
 
     }
 }

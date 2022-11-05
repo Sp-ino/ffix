@@ -1,11 +1,9 @@
 use ffix::types::Ffix;
 use ffix::types::FfixSettings;
-use ffix::types::Roundings;
 
 
 fn main() {
-    let r: Roundings = Roundings::Floor;
-    let settings = FfixSettings::new(true, 18, 12, r);
+    let settings = FfixSettings::new(true, 18, 12, "Floor");
 
     let a = Ffix::new(2.12345678, settings);
     let b = Ffix::new(6.87654321, settings);
@@ -36,6 +34,10 @@ fn main() {
     v.push(a);
     v.push(b);
     v.push(c);
+
+    for item in &v {
+        println!("Value of item is {}", item.value);
+    }
 
     for (idx, item) in v.iter().enumerate() {
         println!("Value of item at index {} is {}", idx, item.value);
