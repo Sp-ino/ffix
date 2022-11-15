@@ -15,16 +15,42 @@
 // algorithm it will be possible to call an update() method that updates the
 // max and min values
 
+// The analyzer might work as follows:
+// I add an argument to the new() associated function of Ffix.
+// This argument allows to pass a reference to an instance of the
+// analyzer. 
+// When a Ffix variable is created, a reference to this variable is registered
+// in the analyzer instance, if one is passed, and then the analyzer instance
+// can update the max and min values when the user calls update()
+
 use crate::types::Ffix;
 
 
+// I actually need a ref cell because otherwise I won't be able
+// to modify the variables referenced by refs_to_vars
 pub struct RangeAnalyzer<'a> {
-    pub variables: Vec<&'a Ffix>, //actually this should be a vector of &Ffix but I will need lifetimes for this
+    refs_to_vars: Vec<&'a Ffix>,
+    vars: Vec<Ffix>,
 }
 
 impl<'a> RangeAnalyzer<'a> {
 
-    fn update_ranges(&self) {
+    pub fn new(refs_to_vars: Vec<& Ffix>) -> RangeAnalyzer {
+        let mut variables: Vec<Ffix> = Vec::new();
 
+        for var in &refs_to_vars {
+            variables.push(**var);
+        }
+
+        RangeAnalyzer {
+            refs_to_vars,
+            vars: variables,
+        }
+    } 
+
+    pub fn update_ranges(&self) {
+        for var in self.refs_to_vars.iter().enumerate() {
+
+        }
     }
 }
