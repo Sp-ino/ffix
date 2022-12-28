@@ -55,7 +55,7 @@ impl RangeAnalyzer {
     pub fn new() -> RangeAnalyzer {
         RangeAnalyzer {
             n_variables: 0,
-            ranges: vec![Range::new()],
+            ranges: Vec::new(),
         }
     }
 

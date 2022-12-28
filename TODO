@@ -1,5 +1,7 @@
 To-do list
 
+- Implement max/min tracking inside Ffix data type by adding a dedicated method which basically implements the = operation with the side effect that the range of the variable gets updated.
+The name of the method might be simply set() or something similar.
 - Rule for operations between Ffix operands with different word and/or fraction length
-- Possibility to choose action to perform on overflow (maybe)
+- Possibility to choose action to perform on overflow (warning, panic, and so on) (maybe)
 - analysis module, that will contain tools for choosing proper word and fraction lengths (working on it)
