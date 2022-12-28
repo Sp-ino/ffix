@@ -37,9 +37,7 @@ pub struct FfixSettings {
 impl FfixSettings {
     pub fn new(signed: bool, word_bits: u32, frac_bits: u32, rounding_s: &str) -> FfixSettings {
         // This associated function is a constructor for
-        // the FfixSettings class. For the rounding method,
-        // the function expects a string literal. However
-        // note that internally 
+        // the FfixSettings class.
         let rounding = utils::find_rounding(rounding_s);
 
         FfixSettings {
@@ -111,7 +109,7 @@ impl Ffix  {
     }
 
     pub fn pow(&self, exponent: i32) -> Ffix {
-        // This method implements fixed point exponentiation.        
+        // Method that implements fixed point exponentiation.        
         let val = self.value;
         let mut result = self.value;
 
