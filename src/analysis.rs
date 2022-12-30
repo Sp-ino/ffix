@@ -9,35 +9,23 @@
 // Copyright (c) 2022 Valerio Spinogatti
 // Licensed under GNU license
 
-
-// This will be a struct which accepts a vector of immutable references to the
-// Ffix variables used in the algorithm. After each iteration of the
-// algorithm it will be possible to call an update() method that updates the
-// max and min values
-
-// The analyzer might work as follows:
-// I add an argument to the new() associated function of Ffix.
-// This argument allows to pass a reference to an instance of the
-// analyzer. 
-// When a Ffix variable is created, a reference to this variable is registered
-// in the analyzer instance, if one is passed, and then the analyzer instance
-// can update the max and min values when the user calls update()
-
 use crate::types::Ffix;
 
 
-struct Range {
-    max: f64,
-    min: f64,
+
+#[derive(Clone, Copy, Debug)]
+pub struct Range {
+    pub upper: f64,
+    pub lower: f64,
 }
 
 
 impl Range {
 
-    fn new() -> Range {
+    pub fn new() -> Range {
         Range{
-            max: 0.0,
-            min: 0.0,
+            upper: 0.0,
+            lower: 0.0,
         }
     }
 
@@ -59,9 +47,13 @@ impl RangeAnalyzer {
         }
     }
 
-
-    pub fn update(vars: Vec<Ffix>) {
-
+    pub fn register_vars(&mut self, vars: &Vec<Ffix>) {
+        
+        self.n_variables = vars.len() as i32;
+        
+        for (idx, var) in vars.iter().enumerate() {
+            self.ranges[idx] = var.range();
+        }
     }
 }
 
@@ -119,8 +111,8 @@ impl RangeAnalyzer {
 
 //         for _ in 0..vars.len() {
 //             let rng = Range{
-//                 min: 0.0,
-//                 max: 0.0,
+//                 lower: 0.0,
+//                 upper: 0.0,
 //             };
 //             ranges.push(rng);
 //         }
@@ -135,8 +127,8 @@ impl RangeAnalyzer {
 
 //     pub fn update(&mut self) {
 //         for (idx, &item) in self.vars.iter().enumerate() {
-//             self.ranges[idx].max = item.value().max(self.vars[idx].value());
-//             self.ranges[idx].min = item.value().min(self.vars[idx].value());
+//             self.ranges[idx].upper = item.value().upper(self.vars[idx].value());
+//             self.ranges[idx].lower = item.value().lower(self.vars[idx].value());
 //         }
 //     }
 

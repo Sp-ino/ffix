@@ -21,7 +21,7 @@ mod utils;
 
 use std::ops;
 use crate::types::internal::Roundings;
-
+use crate::analysis::Range;
 
 
 #[derive(Clone, Copy, Debug)]
@@ -58,6 +58,7 @@ pub struct Ffix {
     // fraction length, and rounding method.
     value: f64,
     settings: FfixSettings,
+    range: Range,
 }
 
 impl Ffix  {
@@ -65,9 +66,12 @@ impl Ffix  {
     pub fn new(val: f64, settings: FfixSettings) -> Self {
         // This associated function is a constructor for
         // creating new instances of Ffix.
+        let range = Range::new(); 
+
         Ffix {
             value: internal::quantize_fix(val, settings),
             settings,
+            range,
         }       
     }
 
@@ -77,9 +81,12 @@ impl Ffix  {
         // and fraction length. Note that the instance that
         // is passed to this method is moved into the
         // converted instance so it cannot be used anymore.
+        let range = Range::new(); 
+        
         Ffix {
             value: internal::quantize_fix(other.value, settings),
             settings,
+            range,
         }
     }
 
@@ -108,6 +115,11 @@ impl Ffix  {
         self.settings.rounding
     }
 
+    pub fn range(&self) -> Range {
+        // Getter method for settings.range
+        self.range
+    }
+
     pub fn pow(&self, exponent: i32) -> Ffix {
         // Method that implements fixed point exponentiation.        
         let val = self.value;
@@ -120,8 +132,28 @@ impl Ffix  {
         Ffix {
             value: result,
             settings: self.settings,
+            range: self.range,
         }
     }
+
+    pub fn upd(&mut self, new: Ffix) {
+        // Should be called when assigning the result
+        // of an operation between Ffix variables to an existing
+        // variable. The method updates the range field
+        // so that the user can perform range analysis
+
+        self.range.upper = self.range
+                                .upper
+                                .max(new.range.upper);
+
+        self.range.lower = self.range
+                                .lower
+                                .min(new.range.lower);
+
+        self.value =  new.value;
+        self.settings = new.settings;
+    }
+
 }
 
 // The methods that follow implement overloaded arithmetic operations
@@ -130,10 +162,13 @@ impl ops::Add for Ffix {
     type Output = Self;
     
     fn add(self, other: Self) -> Self {
+        let range = Range::new();
+
         Self {
             value: internal::quantize_fix(self.value+other.value,
                                             self.settings),
             settings: self.settings,
+            range,
         }
     }
 }
@@ -142,10 +177,13 @@ impl ops::Sub for Ffix {
     type Output = Self;
     
     fn sub(self, other: Self) -> Self {
+        let range = Range::new();
+
         Self {
             value: internal::quantize_fix(self.value-other.value,
                                             self.settings),
             settings: self.settings,
+            range,
         }
     }
 }
@@ -154,10 +192,13 @@ impl ops::Mul for Ffix {
     type Output = Self;
 
     fn mul(self, other: Self) -> Self {
+        let range = Range::new();
+
         Self {
             value: internal::quantize_fix(self.value*other.value,
                                             self.settings),
             settings: self.settings,
+            range,
         }
     }
 }
@@ -166,10 +207,13 @@ impl ops::Div for Ffix {
     type Output = Self;
 
     fn div(self, other: Self) -> Self {
+        let range = Range::new();
+
         Self {
             value: internal::quantize_fix(self.value/other.value,
                                             self.settings),
             settings: self.settings,
+            range,
         }
     }
 }
@@ -178,10 +222,13 @@ impl ops::Neg for Ffix {
     type Output = Self;
     
     fn neg(self) -> Self {
+        let range = Range::new();
+
         Self {
             value: internal::quantize_fix(-self.value,
                                             self.settings),
             settings: self.settings,
+            range,
         }
     }
 }
