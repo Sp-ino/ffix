@@ -3,7 +3,7 @@
 // Author: Valerio Spinogatti
 // 
 // Description: this module contains a set of functionalities
-// that the user can exploit to size and evaluate fixed-point
+// that the user can rely on to size and evaluate fixed-point
 // algorithms written using the Ffix type.
 // 
 // Copyright (c) 2022 Valerio Spinogatti
@@ -47,7 +47,7 @@ impl RangeAnalyzer {
         }
     }
 
-    pub fn register_vars(&mut self, vars: &Vec<Ffix>) {
+    pub fn register_vars<const S: bool, const W: u32, const F: u32, const R: char>(&mut self, vars: &Vec<Ffix<S, W, F, R>>) {
         
         self.n_variables = vars.len() as i32;
         
