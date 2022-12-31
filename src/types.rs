@@ -144,11 +144,11 @@ impl Ffix  {
 
         self.range.upper = self.range
                                 .upper
-                                .max(new.range.upper);
+                                .max(new.value());
 
         self.range.lower = self.range
                                 .lower
-                                .min(new.range.lower);
+                                .min(new.value());
 
         self.value =  new.value;
         self.settings = new.settings;
