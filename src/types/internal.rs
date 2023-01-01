@@ -10,20 +10,35 @@
 // Licensed under GNU license
 
 use core::panic;
-
 use math::round;
+
+
+
+#[derive(Clone, Copy, Debug)]
+pub struct Range {
+    // Data type that represents the range
+    // covered by a fixed during its existence
+    pub upper: f64,
+    pub lower: f64,
+}
+
+impl Range {
+
+    pub fn new() -> Range {
+        Range{
+            upper: 0.,
+            lower: 0.,
+        }
+    }
+}
 
 
 
 pub fn quantize_fix(x: f64, s: bool, w: u32, f: u32, r: char) -> f64 {
     // This function quantizes a float number as a fixed point
     // signed/unsigned number with word length w and fraction length f.
-    // The rounding method is floor. 
     // quantize_fix() is used by the Ffix structure to implement
     // fixed point operators.
-    // Other options will be implemented in the future, such
-    // as the possibility to set the signedness and the rounding
-    // method.
 
     let fs: f64;
     let scaling_fact: f64;
@@ -50,7 +65,10 @@ be strictly less than the word length. I'm not performing quantization.");
 
     // Check and handle overflows
     // First, we compute upper and lower limits
-    let upper_lim: f64 = fs - f64::from(base.pow(f)).powi(-1);
+    let upper_lim: f64 = fs - f64::from(base
+                                        .pow(f))
+                                        .powi(-1);
+
     let lower_lim: f64;
     if s {
         lower_lim = -fs;
@@ -70,7 +88,7 @@ be strictly less than the word length. I'm not performing quantization.");
 
 
 fn round(value: f64, rounding: char) -> f64 {
-    // This is a private function use by quantization
+    // This is a private function used by quantization()
     // to map the rounding method onto a rounding operation
     match rounding {
         'f' => value.floor(),

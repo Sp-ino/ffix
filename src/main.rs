@@ -14,7 +14,7 @@ fn main() {
     println!("{}", d.rounding());
     
     println!("z.rounding before: {}", z.rounding());
-    let z = Ffix::from::<false, 20, 18, 'z'>(z);
+    let z = Ffix::from::<false, 20, 18, 'z'>(&z);
     println!("z.rounding after: {}", z.rounding());
     
     let x: f64 = 2.12345678;
