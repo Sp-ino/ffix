@@ -11,6 +11,5 @@
 // Copyright (c) 2022 Valerio Spinogatti
 // Licensed under GNU license
 
-
 pub mod types;
 pub mod analysis;

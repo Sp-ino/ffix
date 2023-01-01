@@ -8,85 +8,55 @@
 // Copyright (c) 2022 Valerio Spinogatti
 // Licensed under GNU license
 
-
-// TO DO:
-// IMPLEMENT CHECKS ON OVERLOADED OPERATORS TO AVOID OPERATIONS BETWEEN
-// Ffix WITH DIFFERENT WORD/FRACTION LENGTHS
-
-// CONSIDER REMOVING Roundings
-
-
 mod internal;
-mod utils;
 
 use std::ops;
-use crate::types::internal::Roundings;
-use crate::analysis::Range;
-
-
-#[derive(Clone, Copy, Debug)]
-pub struct FfixSettings {
-    // This struct wraps the settings
-    // of a Ffix object
-    pub signed: bool,
-    pub word_bits: u32,
-    pub frac_bits: u32,
-    pub rounding: Roundings,
-}
-
-impl FfixSettings {
-    pub fn new(signed: bool, word_bits: u32, frac_bits: u32, rounding_s: &str) -> FfixSettings {
-        // This associated function is a constructor for
-        // the FfixSettings class.
-        let rounding = utils::find_rounding(rounding_s);
-
-        FfixSettings {
-            signed,
-            word_bits,
-            frac_bits,
-            rounding,        
-        }
-    }
-}
+use num_traits::identities::{One, Zero};
+use crate::types::internal::Range;
 
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct Ffix {
-    // This struct allows to represent fixed point
+pub struct Ffix<const S: bool, const W: u32, const F: u32, const R: char> {
+    // This struct represents fixed point
     // numbers with arbitrary signedness, word length,
-    // fraction length, and rounding method.
+    // fraction length, and rounding method. We refer
+    // to these properties as the "settings" of the
+    // Ffix type. Settings are specified as generic
+    // constant parameters.
+
     value: f64,
-    settings: FfixSettings,
     range: Range,
 }
 
-impl Ffix  {
-
-    pub fn new(val: f64, settings: FfixSettings) -> Self {
+impl<const S: bool, const W: u32, const F: u32, const R: char> Ffix<S, W, F, R> {
+    
+    pub fn new(val: f64) -> Self {
         // This associated function is a constructor for
         // creating new instances of Ffix.
-        let range = Range::new(); 
-
-        Ffix {
-            value: internal::quantize_fix(val, settings),
-            settings,
-            range,
-        }       
-    }
-
-    pub fn from(other: Ffix, settings: FfixSettings) -> Ffix {
-        // This associated function converts an instance
-        // to another instance with specified word lenght
-        // and fraction length. Note that the instance that
-        // is passed to this method is moved into the
-        // converted instance so it cannot be used anymore.
-        let range = Range::new(); 
         
         Ffix {
-            value: internal::quantize_fix(other.value, settings),
-            settings,
-            range,
+            value: internal::quantize_fix(val, S, W, F, R),
+            range: Range::new(),
+        }       
+    }
+    
+    pub fn from<const NS: bool, const NW: u32, const NF: u32, const NR: char>
+                (other: &Ffix<S, W, F, R>) -> Ffix<NS, NW, NF, NR> {
+        // This associated function generates a Ffix
+        // variable with new settings given by NS, NW, NF, NR
+        // from another instance with different settings.
+        // Note that the new settings have to be passed as
+        // generic constant parameters and that the argument
+        // is passed by reference.
+    
+        Ffix::<NS, NW, NF, NR> {
+            value: internal::quantize_fix(other.value,
+                                        NS,
+                                        NW,
+                                        NF,
+                                        NR),
+            range: Range::new(),
         }
     }
 
@@ -96,23 +66,23 @@ impl Ffix  {
     }
 
     pub fn signed(&self) -> bool {
-        // Getter method for settings.signed
-        self.settings.signed
+        // Getter method for signedness
+        S
     }
 
     pub fn word_bits(&self) -> u32 {
-        // Getter method for settings.word_bits
-        self.settings.word_bits
+        // Getter method for word length
+        W
     }
 
     pub fn frac_bits(&self) -> u32 {
-        // Getter method for settings.frac_bits
-        self.settings.frac_bits
+        // Getter method for fraction length
+        F
     }
 
-    pub fn rounding(&self) -> Roundings {
-        // Getter method for settings.rounding
-        self.settings.rounding
+    pub fn rounding(&self) -> char {
+        // Getter method for rounding method
+        R
     }
 
     pub fn range(&self) -> Range {
@@ -120,25 +90,24 @@ impl Ffix  {
         self.range
     }
 
-    pub fn pow(&self, exponent: i32) -> Ffix {
+    pub fn pow(&self, exponent: i32) -> Ffix<S, W, F, R> {
         // Method that implements fixed point exponentiation.        
         let val = self.value;
         let mut result = self.value;
 
         for _i in 1..exponent {
-            result = internal::quantize_fix(result*val, self.settings);
+            result = internal::quantize_fix(result*val, S, W, F, R);
         }
 
         Ffix {
             value: result,
-            settings: self.settings,
             range: self.range,
         }
     }
 
-    pub fn upd(&mut self, new: Ffix) {
+    pub fn upd(&mut self, new: Ffix<S, W, F, R>) {
         // Should be called when assigning the result
-        // of an operation between Ffix variables to an existing
+        // of an operation between Ffix<S, W, F, R> variables to an existing
         // variable. The method updates the range field
         // so that the user can perform range analysis
 
@@ -151,84 +120,107 @@ impl Ffix  {
                                 .min(new.value());
 
         self.value =  new.value;
-        self.settings = new.settings;
     }
 
 }
 
 // The methods that follow implement overloaded arithmetic operations
 // for fixed point numbers
-impl ops::Add for Ffix {
+impl<const S: bool, const W: u32, const F: u32, const R: char> ops::Add for Ffix<S, W, F, R> {
     type Output = Self;
     
     fn add(self, other: Self) -> Self {
-        let range = Range::new();
 
         Self {
             value: internal::quantize_fix(self.value+other.value,
-                                            self.settings),
-            settings: self.settings,
-            range,
+                                            S, W, F, R),
+            range: Range::new(),
         }
     }
 }
 
-impl ops::Sub for Ffix {
+impl<const S: bool, const W: u32, const F: u32, const R: char> ops::Sub for Ffix<S, W, F, R> {
     type Output = Self;
     
     fn sub(self, other: Self) -> Self {
-        let range = Range::new();
 
         Self {
             value: internal::quantize_fix(self.value-other.value,
-                                            self.settings),
-            settings: self.settings,
-            range,
+                                            S, W, F, R),
+            range: Range::new(),
         }
     }
 }
 
-impl ops::Mul for Ffix {
+impl<const S: bool, const W: u32, const F: u32, const R: char> ops::Mul for Ffix<S, W, F, R> {
     type Output = Self;
 
     fn mul(self, other: Self) -> Self {
-        let range = Range::new();
 
         Self {
             value: internal::quantize_fix(self.value*other.value,
-                                            self.settings),
-            settings: self.settings,
-            range,
+                                            S, W, F, R),
+            range: Range::new(),
         }
     }
 }
 
-impl ops::Div for Ffix {
+impl<const S: bool, const W: u32, const F: u32, const R: char> ops::Div for Ffix<S, W, F, R> {
     type Output = Self;
 
     fn div(self, other: Self) -> Self {
-        let range = Range::new();
 
         Self {
             value: internal::quantize_fix(self.value/other.value,
-                                            self.settings),
-            settings: self.settings,
-            range,
+                                            S, W, F, R),
+            range: Range::new(),
         }
     }
 }
 
-impl ops::Neg for Ffix {
+impl<const S: bool, const W: u32, const F: u32, const R: char> ops::Neg for Ffix<S, W, F, R> {
     type Output = Self;
     
     fn neg(self) -> Self {
-        let range = Range::new();
 
         Self {
             value: internal::quantize_fix(-self.value,
-                                            self.settings),
-            settings: self.settings,
-            range,
+                                            S, W, F, R),
+            range: Range::new(),
         }
+    }
+}
+
+impl<const S: bool, const W: u32, const F: u32, const R: char> One for Ffix<S, W, F, R> {
+
+    fn one() -> Self {
+        Ffix::<S, W, F, R> {
+            value: 1.,
+            range: Range::new(),
+        }
+    }
+}
+
+impl<const S: bool, const W: u32, const F: u32, const R: char> Zero for Ffix<S, W, F, R> {
+
+    fn zero() -> Self {
+        Ffix::<S, W, F, R> {
+            value: 0.,
+            range: Range::new(),
+        }
+    }
+
+    fn is_zero(&self) -> bool {
+        
+        let base: u32 = 2;
+        let lsb = f64::from(base
+                                .pow(F))
+                                .powi(-1);
+
+        if self.value.abs() < lsb {
+            return true
+        }
+
+        false
     }
 }
