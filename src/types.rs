@@ -11,6 +11,7 @@
 mod internal;
 
 use std::ops;
+use std::cmp::PartialOrd;
 use num_traits::identities::{One, Zero};
 use crate::types::internal::Range;
 
@@ -113,11 +114,11 @@ impl<const S: bool, const W: u32, const F: u32, const R: char> Ffix<S, W, F, R> 
 
         self.range.upper = self.range
                                 .upper
-                                .max(new.value());
+                                .max(new.value);
 
         self.range.lower = self.range
                                 .lower
-                                .min(new.value());
+                                .min(new.value);
 
         self.value =  new.value;
     }
@@ -222,5 +223,40 @@ impl<const S: bool, const W: u32, const F: u32, const R: char> Zero for Ffix<S, 
         }
 
         false
+    }
+}
+
+impl<const S: bool, const W: u32, const F: u32, const R: char> PartialEq for Ffix<S, W, F, R> {
+    
+    fn eq(&self, other: &Self) -> bool {
+        // Better to use the eq implementation for float on the values of self and other
+        self.value.eq(&other.value)
+    }
+
+    fn ne(&self, other: &Self) -> bool {
+        !self.eq(other)
+    }
+}
+
+impl<const S: bool, const W: u32, const F: u32, const R: char> PartialOrd for Ffix<S, W, F, R> {
+    
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        self.value.partial_cmp(&other.value)
+    }
+
+    fn lt(&self, other: &Self) -> bool {
+        self.value < other.value
+    }
+
+    fn le(&self, other: &Self) -> bool {
+        self.value <= other.value 
+    }
+
+    fn gt(&self, other: &Self) -> bool {
+        self.value > other.value
+    }
+
+    fn ge(&self, other: &Self) -> bool {
+        self.value >= other.value
     }
 }

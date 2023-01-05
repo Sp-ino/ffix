@@ -3,9 +3,10 @@ use ffix::types::Ffix;
 
 fn main() {
 
-    let a: Ffix<true, 18, 16, 'f'> = Ffix::new(2.12345678);
-    let b: Ffix<true, 18, 16, 'f'> = Ffix::new(6.87654321);
-    let c: Ffix<true, 18, 16, 'f'> = Ffix::new(32.0);  
+    // -------------------Some basic operations------------------------------ 
+    let a: Ffix<true, 24, 16, 'f'> = Ffix::new(2.12345678);
+    let b: Ffix<true, 24, 16, 'f'> = Ffix::new(6.87654321);
+    let c: Ffix<true, 24, 16, 'f'> = Ffix::new(32.0);  
     let d: Ffix<true, 24, 16, 'z'> = Ffix::new(32.0);
     let z: Ffix<false, 24, 15, 'c'> = Ffix::new(24.0);
 
@@ -14,7 +15,7 @@ fn main() {
     println!("{}", d.rounding());
     
     println!("z.rounding before: {}", z.rounding());
-    let z = Ffix::from::<false, 20, 18, 'z'>(&z);
+    let z = Ffix::from::<false, 20, 16, 'z'>(&z);
     println!("z.rounding after: {}", z.rounding());
     
     let x: f64 = 2.12345678;
@@ -36,28 +37,45 @@ fn main() {
     
     println!("\nOverflow test: b*c is {}", (b*c).value());
     println!("Overflow test: -b*c is {}\n", (-b*c).value());
+    // ------------------------------------------------------------------
 
-    // // I can also define vectors of Ffix
-    // let mut v: Vec<Ffix<true, 24, 16, 0>> = Vec::new();
-    // v.push(a);
-    // v.push(b);
-    // v.push(c);
+    // ---------------I can also define vectors of Ffix------------------
+    let mut v: Vec<Ffix<true, 24, 16, 'f'>> = Vec::new();
+    v.push(a);
+    v.push(b);
+    v.push(c);
 
-    // for item in &v {
-    //     println!("Value of item is {}", item.value());
-    // }
+    for item in &v {
+        println!("Value of item is {}", item.value());
+    }
 
-    // for (idx, item) in v.iter().enumerate() {
-    //     println!("Value of item at index {} is {}", idx, item.value());
-    // }
+    for (idx, item) in v.iter().enumerate() {
+        println!("Value of item at index {} is {}", idx, item.value());
+    }
 
-    // println!("value of v[0]: {}", v[0].value());
+    println!("value of v[0]: {}", v[0].value());
 
-    // v[0] = v[1] - v[2];
+    v[0] = v[1] - v[2];
 
-    // println!("v[0] is {}", v[0].value());
+    println!("v[0] is {}", v[0].value());
+    // ------------------------------------------------------------------
 
-    // // for i in 1..100 {
-    // //     println!("Rounded to zero {}", round::half_towards_zero(-1.0-1.0/f64::from(i), 0));
-    // // }
+    // ------------------Also, comparing two Ffix is allowed-------------
+    let outcome1 = a > b;
+    let outcome2 = a < b;
+    let outcome3 = a == b;
+    println!("Result of comparison a > b: {outcome1}");
+    println!("Result of comparison a < b: {outcome2}");
+    println!("Result of comparison a == b: {outcome3}");
+
+    let c = Ffix::from::<true, 18, 16, 'z'>(&a);
+    let d = Ffix::from::<true, 18, 16, 'z'>(&b);
+    let outcome1 = c > d;
+    let outcome2 = c < d;
+    let outcome3 = c == d;
+    println!("Result of comparison c > d: {outcome1}");
+    println!("Result of comparison c < d: {outcome2}");
+    println!("Result of comparison c == d: {outcome3}");
+    // ------------------------------------------------------------------
+
 }
