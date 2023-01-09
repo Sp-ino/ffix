@@ -8,8 +8,8 @@
 // Copyright (c) 2022 Valerio Spinogatti
 // Licensed under GNU license
 
-mod quantization;
 mod range;
+pub mod quantization;
 
 use std::ops;
 use std::cmp::PartialOrd;
@@ -43,23 +43,35 @@ impl<const S: bool, const W: u32, const F: u32, const R: char> Ffix<S, W, F, R> 
         }       
     }
     
-    pub fn from<const NS: bool, const NW: u32, const NF: u32, const NR: char>
-                (other: &Ffix<S, W, F, R>) -> Ffix<NS, NW, NF, NR> {
-        // This associated function generates a Ffix
-        // variable with new settings given by NS, NW, NF, NR
-        // from another instance with different settings.
+    pub fn cast<const NS: bool, const NW: u32, const NF: u32, const NR: char>
+                (given: &Ffix<S, W, F, R>) -> Ffix<NS, NW, NF, NR> {
+        // This associated function transforms the argument
+        // into a new Ffix variable with settings NS, NW, NF, NR
         // Note that the new settings have to be passed as
         // generic constant parameters and that the argument
-        // is passed by reference.
+        // is passed by reference. cast() is useful for performing
+        // conversions between different Ffix types in implementations
+        // that requires Ffix variables with different settings to coexist.
+        // Also note that this function does not consume the value
+        // that is passed to it.
     
         Ffix::<NS, NW, NF, NR> {
-            value: quantization::quantize_fix(other.value,
-                                        NS,
-                                        NW,
-                                        NF,
-                                        NR),
+            value: quantization::quantize_fix(given.value, NS, NW, NF, NR),
             range: Range::new(),
         }
+    }
+
+    pub fn another(&self, value: f64) -> Ffix<S, W, F, R> {
+        // Returns a new Ffix variables with the same settings as the
+        // current one and a new value that is specified by the user.
+        // This method is useful to create Ffix variables with the same
+        // settings without having to specify the generics every time.
+
+        Ffix::<S, W, F, R> {
+            value: quantization::quantize_fix(value, S, W, F, R),
+            range: Range::new(),
+        }
+
     }
 
     pub fn value(&self) -> f64 {
@@ -201,7 +213,7 @@ impl<const S: bool, const W: u32, const F: u32, const R: char> Zero for Ffix<S, 
 
     fn zero() -> Self {
         Ffix::<S, W, F, R> {
-            value: 0.,
+            value: 0.0,
             range: Range::new(),
         }
     }

@@ -1,4 +1,5 @@
 use ffix::types::Ffix;
+use ffix::analysis::RangeAnalyzer;
 
 
 fn main() {
@@ -15,7 +16,7 @@ fn main() {
     println!("{}", d.rounding());
     
     println!("z.rounding before: {}", z.rounding());
-    let z = Ffix::from::<false, 20, 16, 'z'>(&z);
+    let z = Ffix::cast::<false, 20, 16, 'z'>(&z);
     println!("z.rounding after: {}", z.rounding());
     
     let x: f64 = 2.12345678;
@@ -44,6 +45,9 @@ fn main() {
     v.push(a);
     v.push(b);
     v.push(c);
+    v.push(c.another(0.5));
+    v.push(c.another(15.0));
+    v.push(c.another(16.13));
 
     for item in &v {
         println!("Value of item is {}", item.value());
@@ -68,14 +72,33 @@ fn main() {
     println!("Result of comparison a < b: {outcome2}");
     println!("Result of comparison a == b: {outcome3}");
 
-    let c = Ffix::from::<true, 18, 16, 'z'>(&a);
-    let d = Ffix::from::<true, 18, 16, 'z'>(&b);
+    let c = Ffix::cast::<true, 18, 16, 'z'>(&a);
+    let d = Ffix::cast::<true, 18, 16, 'z'>(&b);
     let outcome1 = c > d;
     let outcome2 = c < d;
     let outcome3 = c == d;
     println!("Result of comparison c > d: {outcome1}");
     println!("Result of comparison c < d: {outcome2}");
     println!("Result of comparison c == d: {outcome3}");
+    // ------------------------------------------------------------------
+
+    // --------------Experiments with upd()------------------------------
+    println!("\n\n");
+    let mut result = v[0].another(10.0);
+
+    for (i, item) in v.iter().enumerate() {
+        let iffix = Ffix::<true, 24, 16, 'f'>::new(i as f64);
+        let itm = *item;
+        let interm = (iffix * itm - itm.another(10.0))/result;
+        println!("interm is {}", interm.value());
+        result.upd(interm);
+    }
+    println!("Range of the result variable: {:?}\n\n", result.range());
+
+    let ra = RangeAnalyzer::new(&vec![result],
+                                                                vec!["result".to_string()]);
+
+    ra.log();
     // ------------------------------------------------------------------
 
 }
