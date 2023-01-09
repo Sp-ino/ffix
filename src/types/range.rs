@@ -14,7 +14,8 @@
 #[derive(Clone, Copy, Debug)]
 pub struct Range {
     // Data type that represents the range
-    // covered by a fixed during its existence
+    // covered by a Ffix variable during its
+    // existence
     pub upper: f64,
     pub lower: f64,
 }
@@ -25,8 +26,8 @@ impl Range {
         // Constructor for the Range type
 
         Range{
-            upper: 0.,
-            lower: 0.,
+            upper: 0.0,
+            lower: 0.0,
         }
     }
 
@@ -37,7 +38,11 @@ impl Range {
         // between itself and the most recent value. 
 
         self.upper = self.upper.max(new);
-        self.lower = self.lower.max(new);
+        self.lower = self.lower.min(new);
+    }
+
+    pub fn width(&self) -> f64 {
+        self.upper - self.lower
     }
 }
 
