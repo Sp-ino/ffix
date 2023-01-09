@@ -1,5 +1,8 @@
 To-do list
 
-- Move compute_lims() to another module (it should be public so it can be used by analysis)
+- Add like() function that creates a Ffix with specified value and the same settings as another Ffix
+- Think about the possibility of creating a signed and unsigned Ffix type to remove the first generic constant
+  parameter and simplify syntax
+- Find another name for compute_lims()
 - Possibility to choose action to perform on overflow (warning, panic, and so on) (maybe)
 - analysis module, that will contain tools for choosing proper word and fraction lengths (working on it)

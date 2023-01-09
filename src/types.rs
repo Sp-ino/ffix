@@ -8,12 +8,13 @@
 // Copyright (c) 2022 Valerio Spinogatti
 // Licensed under GNU license
 
-mod internal;
+mod quantization;
+mod range;
 
 use std::ops;
 use std::cmp::PartialOrd;
 use num_traits::identities::{One, Zero};
-use crate::types::internal::Range;
+use crate::types::range::Range;
 
 
 
@@ -37,7 +38,7 @@ impl<const S: bool, const W: u32, const F: u32, const R: char> Ffix<S, W, F, R> 
         // creating new instances of Ffix.
         
         Ffix {
-            value: internal::quantize_fix(val, S, W, F, R),
+            value: quantization::quantize_fix(val, S, W, F, R),
             range: Range::new(),
         }       
     }
@@ -52,7 +53,7 @@ impl<const S: bool, const W: u32, const F: u32, const R: char> Ffix<S, W, F, R> 
         // is passed by reference.
     
         Ffix::<NS, NW, NF, NR> {
-            value: internal::quantize_fix(other.value,
+            value: quantization::quantize_fix(other.value,
                                         NS,
                                         NW,
                                         NF,
@@ -97,7 +98,7 @@ impl<const S: bool, const W: u32, const F: u32, const R: char> Ffix<S, W, F, R> 
         let mut result = self.value;
 
         for _i in 1..exponent {
-            result = internal::quantize_fix(result*val, S, W, F, R);
+            result = quantization::quantize_fix(result*val, S, W, F, R);
         }
 
         Ffix {
@@ -107,18 +108,12 @@ impl<const S: bool, const W: u32, const F: u32, const R: char> Ffix<S, W, F, R> 
     }
 
     pub fn upd(&mut self, new: Ffix<S, W, F, R>) {
-        // Should be called when assigning the result
-        // of an operation between Ffix<S, W, F, R> variables to an existing
-        // variable. The method updates the range field
-        // so that the user can perform range analysis
+        // Can be called when assigning the result of an operation between Ffix
+        // variables to an existing variable. The reason to use upd() instead of
+        // the = operator is that upd() updates the range field
+        // so that range analysis can be performed.
 
-        self.range.upper = self.range
-                                .upper
-                                .max(new.value);
-
-        self.range.lower = self.range
-                                .lower
-                                .min(new.value);
+        self.range.update(new.value);
 
         self.value =  new.value;
     }
@@ -133,7 +128,7 @@ impl<const S: bool, const W: u32, const F: u32, const R: char> ops::Add for Ffix
     fn add(self, other: Self) -> Self {
 
         Self {
-            value: internal::quantize_fix(self.value+other.value,
+            value: quantization::quantize_fix(self.value+other.value,
                                             S, W, F, R),
             range: Range::new(),
         }
@@ -146,7 +141,7 @@ impl<const S: bool, const W: u32, const F: u32, const R: char> ops::Sub for Ffix
     fn sub(self, other: Self) -> Self {
 
         Self {
-            value: internal::quantize_fix(self.value-other.value,
+            value: quantization::quantize_fix(self.value-other.value,
                                             S, W, F, R),
             range: Range::new(),
         }
@@ -159,7 +154,7 @@ impl<const S: bool, const W: u32, const F: u32, const R: char> ops::Mul for Ffix
     fn mul(self, other: Self) -> Self {
 
         Self {
-            value: internal::quantize_fix(self.value*other.value,
+            value: quantization::quantize_fix(self.value*other.value,
                                             S, W, F, R),
             range: Range::new(),
         }
@@ -172,7 +167,7 @@ impl<const S: bool, const W: u32, const F: u32, const R: char> ops::Div for Ffix
     fn div(self, other: Self) -> Self {
 
         Self {
-            value: internal::quantize_fix(self.value/other.value,
+            value: quantization::quantize_fix(self.value/other.value,
                                             S, W, F, R),
             range: Range::new(),
         }
@@ -185,7 +180,7 @@ impl<const S: bool, const W: u32, const F: u32, const R: char> ops::Neg for Ffix
     fn neg(self) -> Self {
 
         Self {
-            value: internal::quantize_fix(-self.value,
+            value: quantization::quantize_fix(-self.value,
                                             S, W, F, R),
             range: Range::new(),
         }

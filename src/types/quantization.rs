@@ -1,36 +1,16 @@
-// Module name: internal.rs
+// Module name: quantization.rs
 // 
 // Author: Valerio Spinogatti
 // 
-// Description: this module contains definitions
-// related to the internal operation of the
-// Ffix and Ffix settings struct
+// Description: defines functions used to
+// quantize the values stored in Ffix variables
+// after each operation/assignment
 // 
 // Copyright (c) 2022 Valerio Spinogatti
 // Licensed under GNU license
 
 use core::panic;
 use math::round;
-
-
-
-#[derive(Clone, Copy, Debug)]
-pub struct Range {
-    // Data type that represents the range
-    // covered by a fixed during its existence
-    pub upper: f64,
-    pub lower: f64,
-}
-
-impl Range {
-
-    pub fn new() -> Range {
-        Range{
-            upper: 0.,
-            lower: 0.,
-        }
-    }
-}
 
 
 
